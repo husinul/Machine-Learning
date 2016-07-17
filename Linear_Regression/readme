@@ -1,0 +1,3 @@
+drug.R uses inbulit function lm() to compute the h(x) while drug_gradient.R uses batch gradient descent 
+
+drugdata.csv contains the dataset
