@@ -30,6 +30,6 @@ fitted(res)
 #use to insert the input query 
 new.df <- data.frame(x = c(1))
 
-# to predict the y value for the x = 
+# to predict the y value for the x = 1 mg
 output <- predict( res, new.df)
 print (output)
