@@ -1,11 +1,17 @@
 
 # http://www.transtats.bts.gov/DL_SelectFields.asp?Table_ID=236&DB_Short_Name=On-Time
+
+install.packages('caret')
+library(caret)
+library(randomForest)
+install.packages('e1071', dependencies=TRUE)
 origData <- read.csv('C:/Users/Arjun S Kumar/Downloads/dot.csv')
 m<- nrow(origData)
 
 print(m)
 #print (origData)
 
+#we need only US airports
 airports <- c('ATL','LAX','ORD','DFW','JFK','SFO','CLT','LAS','PHX')
 
 origData <- subset(origData, DEST %in% airports & ORIGIN %in% airports)
@@ -15,6 +21,7 @@ y<-nrow(origData)
 #print(y)
 
 print(head(origData,2))
+
 print (tail(origData,2))
        
 # final attribute is marked with x and values are NA so we can remove it
@@ -63,9 +70,22 @@ onTimeData$CARRIER <- as.factor(onTimeData$CARRIER)
 tapply(onTimeData$ARR_DEL15,onTimeData$ARR_DEL15, length)
 
 
+set.seed(122515)
+featureCols <- c("ARR_DEL15","DAY_OF_WEEK", "CARRIER", "DEST", "ORIGIN", "DEP_TIME_BLK")
+onTimeDataFiltered <- onTimeData[,featureCols]
+#print(onTimeDataFiltered)
 
+# we are using 70 % training data and 30% test data
+inTrainRows <- createDataPartition(onTimeDataFiltered$ARR_DEL15,p=0.7,list = FALSE)
+head(inTrainRows,5)
 
+trainDataFiltered <- onTimeDataFiltered[inTrainRows,]
+testDataFiltered <- onTimeDataFiltered[-inTrainRows,]
+nrow(trainDataFiltered)/( nrow(trainDataFiltered)+nrow(testDataFiltered))
+nrow(testDataFiltered)/ ( nrow(trainDataFiltered)+ nrow(testDataFiltered))
 
+logisticRegModel <- train(ARR_DEL15 ~., data = trainDataFiltered, method= "glm", family = "binomial")
 
-
-
+logRegPrediction <- predict(logisticRegModel, testDataFiltered)
+logRegConfMat <- confusionMatrix(logRegPrediction, testDataFiltered[,"ARR_DEL15"])
+print(logRegConfMat)
